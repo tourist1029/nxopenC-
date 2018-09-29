@@ -12,3 +12,4 @@ D:\VCTEST\C#\konx10\application\NX12_Open_Postprocess.dll
 D:\VCTEST\C#\konx10\application\NX12_Open_Postprocess.pdb
 D:\VCTEST\C#\Gitfiles\CC\NX12_Open_Postprocess\NX12_Open_Postprocess\obj\Debug\NX12_Open_Postprocess.dll
 D:\VCTEST\C#\Gitfiles\CC\NX12_Open_Postprocess\NX12_Open_Postprocess\obj\Debug\NX12_Open_Postprocess.pdb
+D:\VCTEST\C#\Gitfiles\CC\NX12_Open_Postprocess\NX12_Open_Postprocess\obj\Debug\NX12_Open_Postprocess.csprojResolveAssemblyReference.cache

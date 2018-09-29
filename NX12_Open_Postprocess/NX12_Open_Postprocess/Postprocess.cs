@@ -260,10 +260,10 @@ public class Postprocess
             //list_ncfiles.SetDeleteHandler(new NXOpen.BlockStyler.ListBox.DeleteCallback(DeleteCallback));
 
             //------------------------------------------------------------------------------
-
             
 
-            
+
+
 
 
         }
@@ -326,8 +326,16 @@ public class Postprocess
         
         list_postName.SetListItems(temppostarray);
 
+        //将输出目录设置为打开文件的默认目录
+        //取得当前工作部件的目录，并将其设置在输出目录里
+        string wholepath = workPart.FullPath;
+        string part_name = workPart.Name;
+        int indexofName = wholepath.LastIndexOf(part_name);
+        string workpath = wholepath.Substring(0, indexofName);
 
-        //theUfSession.Ui.DisplayMessage(list_postName.GetSelectedItemBooleans().Length.ToString(), 1);
+        string_outfile.Value = workpath;
+
+        //theUfSession.Ui.DisplayMessage(workpath, 1);
 
     }
 
@@ -355,7 +363,7 @@ public class Postprocess
         {
             //---- Enter your callback code here -----
 
-            
+            //theUfSession.Ui.DisplayMessage("指定的输出目录： " + nativeFolderBrowser_outpath.Path, 1);
 
 
 
@@ -501,7 +509,11 @@ public class Postprocess
             }
             else if(block == nativeFolderBrowser_outpath)
             {
-            //---------Enter your code here-----------
+                //---------Enter your code here-----------
+
+                string_outfile.Value = nativeFolderBrowser_outpath.Path;
+
+
             }
             else if(block == string_Unit)
             {
@@ -511,31 +523,7 @@ public class Postprocess
             {
             //---------Enter your code here-----------
 
-                //当勾选，显示输出后置处理好的文件
-                if(toggle_showIt.Value == true)
-                {
-                    string[] temp_output_posts = posted_name_list;
-                    string wholepath = workPart.FullPath;
-                    string part_name = workPart.Name;
-                    int indexofName = wholepath.IndexOf(part_name);
-                    string workpath = wholepath.Substring(0, indexofName);
-                    
-
-                    theUfSession.Ui.OpenListingWindow();
-                    for (int i=0; i<temp_output_posts.Length; i++)
-                    {
-                        //打开列表窗口,只能打开一个信息窗口，因此会在一个窗口中循环显示，已经后处理的文件
- 
-                        string using_workpath = workpath + "\\" + temp_output_posts[i];
-                        StreamReader sw = new StreamReader(using_workpath);
-                        string temp_outfile = sw.ReadToEnd();
-                        
-                        theUfSession.Ui.WriteListingWindow("已经后处理的程序文件：" + temp_output_posts[i] + "\n");
-                        theUfSession.Ui.WriteListingWindow(temp_outfile + "\n");
-                        sw.Close();
-                    }
-                    
-                }
+                
 
 
 
@@ -551,6 +539,8 @@ public class Postprocess
             {
                 //---------Enter your code here-----------
 
+                //增加一个选项，当选取输出目录不为null时，后处理好的文件的输出目录为选取目录中的目录，当为null时，默认为打开文件的目录为输出目录
+                
                 //输出后处理
                 //将选中的节点的数量及tag返回
                 int selectNodeCount;
@@ -564,15 +554,15 @@ public class Postprocess
                 string wholepath = workPart.FullPath;
                 string part_name = workPart.Name;
                 int indexofName = wholepath.LastIndexOf(part_name);
-                string workpath = wholepath.Substring(0, indexofName);
+                string workpath = nativeFolderBrowser_outpath.Path;
                 //theUfSession.Ui.DisplayMessage(workpath, 1);  //测试工作目录是否正确
 
 
                 //返回选中的后处理器的名称
 
                 string[] usingpostname = list_postName.GetSelectedItemStrings();  //获取选中的后处理器的名称，用于后处理设置中给定的machine name，每次后处理只允许选取一个后处理器，不允许多选，因此取“0”个元素
-                //theUfSession.Ui.DisplayMessage("选中的列的文本： " + usingpostname[0], 1);
-                
+                                                                                  //theUfSession.Ui.DisplayMessage("选中的列的文本： " + usingpostname[0], 1);
+
                 string[] all_postmachin_name = list_postName.GetListItems();
                 post_machine_name = usingpostname[0];
 
@@ -590,6 +580,12 @@ public class Postprocess
                     //nativeFolderBrowser_outpath.Path = string_outfile.Value + "\\" + camObjects[i].Name;
                     //theUfSession.Ui.DisplayMessage("输出文件路径： " + nativeFile_outfilepath.Path, 1);
                     //workPart.CAMSetup.OutputClsf(tempObj, enum_clsf.ValueAsString, nativeFolderBrowser_Path.Path + camObjects[i].Name, NXOpen.CAM.CAMSetup.OutputUnits.Metric);
+                    if (File.Exists(string_outfile.Value + postlistName[i]))
+                    {
+                        //theUfSession.Ui.DisplayMessage("文件已经存在了", 1);
+                        File.Delete(string_outfile.Value + postlistName[i]);
+                    }
+                    //theUfSession.Ui.DisplayMessage(string_outfile.Value + postlistName[i], 1);
                     workPart.CAMSetup.PostprocessWithSetting(tempObj, post_machine_name, string_outfile.Value + "\\" + postlistName[i], NXOpen.CAM.CAMSetup.OutputUnits.Metric, NXOpen.CAM.CAMSetup.PostprocessSettingsOutputWarning.PostDefined, NXOpen.CAM.CAMSetup.PostprocessSettingsReviewTool.PostDefined);
                 }
 
@@ -611,6 +607,37 @@ public class Postprocess
                 list_ncfiles.SetListItems(listpostName_sec);
                 //将导出文件名称转存到公共字符串数组，方便窗口显示文件调用
                 posted_name_list = listpostName_sec;
+
+
+                //当勾选，显示输出后置处理好的文件
+                if (toggle_showIt.Value == true)
+                {
+                    string[] temp_output_posts = posted_name_list;
+                    //string wholepath = workPart.FullPath;
+                    //string part_name = workPart.Name;
+                    //int indexofName = wholepath.LastIndexOf(part_name);
+                    //string workpath = wholepath.Substring(0, indexofName);
+
+
+                    theUfSession.Ui.OpenListingWindow();
+                    for (int i = 0; i < temp_output_posts.Length; i++)
+                    {
+                        //打开列表窗口,只能打开一个信息窗口，因此会在一个窗口中循环显示，已经后处理的文件
+
+                        string using_workpath = workpath + "\\" + temp_output_posts[i];
+                        StreamReader sw = new StreamReader(using_workpath);
+                        string temp_outfile = sw.ReadToEnd();
+
+                        theUfSession.Ui.WriteListingWindow("已经后处理的程序文件：" + temp_output_posts[i] + "\n");
+                        theUfSession.Ui.WriteListingWindow(temp_outfile + "\n");
+                        sw.Close();
+                    }
+
+                }
+
+
+
+
 
 
             }
