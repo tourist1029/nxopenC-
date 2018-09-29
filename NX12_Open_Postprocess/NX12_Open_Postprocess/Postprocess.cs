@@ -76,7 +76,7 @@ public class Postprocess
     public ArrayList listPostNames = new ArrayList();
     string post_machine_name;
     int post_machine_count;
-
+    string[] posted_name_list;
 
     //------------------------------------------------------------------------------
     //Constructor for NX Styler class
@@ -355,11 +355,7 @@ public class Postprocess
         {
             //---- Enter your callback code here -----
 
-            string[] alltext = list_postName.GetSelectedItemStrings();
-            for (int j = 0; j < alltext.Length; j++)
-            {
-                theUfSession.Ui.DisplayMessage(alltext[j], 1);
-            }
+            
 
 
 
@@ -514,10 +510,42 @@ public class Postprocess
             else if(block == toggle_showIt)
             {
             //---------Enter your code here-----------
+
+                //当勾选，显示输出后置处理好的文件
+                if(toggle_showIt.Value == true)
+                {
+                    string[] temp_output_posts = posted_name_list;
+                    string wholepath = workPart.FullPath;
+                    string part_name = workPart.Name;
+                    int indexofName = wholepath.IndexOf(part_name);
+                    string workpath = wholepath.Substring(0, indexofName);
+                    
+
+                    theUfSession.Ui.OpenListingWindow();
+                    for (int i=0; i<temp_output_posts.Length; i++)
+                    {
+                        //打开列表窗口,只能打开一个信息窗口，因此会在一个窗口中循环显示，已经后处理的文件
+ 
+                        string using_workpath = workpath + "\\" + temp_output_posts[i];
+                        StreamReader sw = new StreamReader(using_workpath);
+                        string temp_outfile = sw.ReadToEnd();
+                        
+                        theUfSession.Ui.WriteListingWindow("已经后处理的程序文件：" + temp_output_posts[i] + "\n");
+                        theUfSession.Ui.WriteListingWindow(temp_outfile + "\n");
+                        sw.Close();
+                    }
+                    
+                }
+
+
+
             }
             else if(block == list_ncfiles)
             {
-            //---------Enter your code here-----------
+                //---------Enter your code here-----------
+
+                
+
             }
             else if(block == button_output)
             {
@@ -565,7 +593,24 @@ public class Postprocess
                     workPart.CAMSetup.PostprocessWithSetting(tempObj, post_machine_name, string_outfile.Value + "\\" + postlistName[i], NXOpen.CAM.CAMSetup.OutputUnits.Metric, NXOpen.CAM.CAMSetup.PostprocessSettingsOutputWarning.PostDefined, NXOpen.CAM.CAMSetup.PostprocessSettingsReviewTool.PostDefined);
                 }
 
-                
+                //添加选中的要后处理的程序文件到列表框中，并进行输出
+                int selpostcount;
+                Tag[] selpostTags;
+
+
+                //将选中的节点的数量及tag返回
+                theUfSession.UiOnt.AskSelectedNodes(out selpostcount, out selpostTags);
+                string[] listpostName_sec = new string[selpostcount];
+
+                NXOpen.CAM.CAMObject[] postObjects = new NXOpen.CAM.CAMObject[selpostcount];
+                for (int k = 0; k < selpostcount; k++)
+                {
+                    postObjects[k] = (NXOpen.CAM.CAMObject)NXObjectManager.Get(selpostTags[k]);
+                    listpostName_sec[k] = postObjects[k].Name + "." + string_lastName.Value;
+                }
+                list_ncfiles.SetListItems(listpostName_sec);
+                //将导出文件名称转存到公共字符串数组，方便窗口显示文件调用
+                posted_name_list = listpostName_sec;
 
 
             }
